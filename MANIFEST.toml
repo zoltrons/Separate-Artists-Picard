@@ -1,0 +1,56 @@
+uuid = "10271e90-857d-47b5-a8de-527e2ec43f08"
+name = "Separate Artists"
+version = "1.1.0"
+description = "Split multi-artist credits into A, B without collapsing multi-artist albums to one artist."
+api = ["3.0"]
+authors = ["zoltrons"]
+maintainers = ["zoltrons"]
+license = "MIT"
+license_url = "https://opensource.org/licenses/MIT"
+categories = ["metadata"]
+min_python_version = "3.9"
+
+long_description = """
+Writes one artist per value instead of leaving a joined credit such as
+`A & B` in the tags.
+
+For a track credited to **A & B** the plugin writes:
+
+```text
+ARTIST       = A, B
+ARTISTS      = A
+ARTISTS      = B
+```
+
+For an album credited to **A & B**, both album artists are preserved:
+
+```text
+ALBUMARTIST  = A, B
+ALBUMARTISTS = A
+ALBUMARTISTS = B
+```
+
+A single-artist album stays single (`ALBUMARTIST = A`,
+`ALBUMARTISTS = A`). Multi-artist albums are never reduced to the first
+artist unless the optional first-artist mode is explicitly selected.
+
+This is the tag layout used by Navidrome and other players that separate the
+display artist from the individually linked artists. The first track artist
+is the primary artist, so scrobblers configured to submit only the first
+artist report the track under **A** instead of the non-existent collaboration
+artist **A & B**.
+
+MusicBrainz artist credits are used as the source of truth, so genuine names
+that contain separators (Simon & Garfunkel, AC/DC, Tyler, The Creator, …) are
+not broken up. Plain string tags are split only as a fallback, with a
+configurable never-split list.
+
+If a file already carries a Spotify-style artist order (for example from a
+Spotify downloader), the plugin keeps that order when the names are present
+in the MusicBrainz credit. No Spotify account or API key is needed.
+
+Settings let you choose the display separator, whether ARTIST shows every
+artist or only the primary artist, and whether album artists are preserved or
+collapsed. A right-click action is available for tracks, files, albums and
+clusters.
+"""
