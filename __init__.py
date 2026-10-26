@@ -8,6 +8,9 @@ Spotify-style tags:
     ALBUMARTIST  = A; B       (multi-value, all album artists)
     ALBUMARTISTS = A; B       (multi-value)
 
+The plugin needs no configuration: it runs automatically while albums load,
+when files are matched to tracks and before files are saved.
+
 The first artist is treated as the primary artist.  Multi-artist albums keep
 all of their album artists; only the optional first-artist mode collapses
 them.  When the file already contains a Spotify-style artist order, that
@@ -16,12 +19,12 @@ order is preferred as long as the name also exists in the MusicBrainz credit.
 
 from __future__ import annotations
 
-from .config import load_config, register_options
+from .config import load_config
 from .core import apply_split
 
 
 PLUGIN_NAME = 'Separate Artists'
-PLUGIN_VERSION = '1.2.0'
+PLUGIN_VERSION = '1.3.0'
 
 
 def _original_for_track(track):
@@ -62,10 +65,26 @@ def _iter_targets(obj, album_cls, track_cls, file_cls, cluster_cls):
 def _describe(result) -> str:
     if not result.changed:
         return 'no changes'
-    parts = [', '.join(result.artists)]
+    parts = [', '.join(result.artists)] if result.artists else []
     if result.album_primary:
         parts.append(f'album artist: {result.album_primary}')
     return '; '.join(parts)
+
+
+def process_album(api, album, metadata, release_node):
+    """Split the album artists as soon as the release is loaded."""
+
+    from picard.plugin3.api import DebugOpt
+
+    result = apply_split(metadata, load_config(api))
+    if result.changed:
+        api.logger.debug_if(
+            DebugOpt.PLUGIN_DEVELOPMENT,
+            'Separate Artists: album %s -> %s',
+            metadata.get('album', album),
+            _describe(result),
+        )
+    return result
 
 
 def process_track(api, track, metadata, track_node, release_node=None):
@@ -130,11 +149,7 @@ def enable(api):
         Track,
     )
 
-    from .options import SeparateArtistsOptionsPage
-
     api.logger.info('%s %s loaded', PLUGIN_NAME, PLUGIN_VERSION)
-
-    register_options(api)
 
     class SeparateArtistsAction(BaseAction):
         TITLE = 'Separate Artists (Spotify-style)'
@@ -169,13 +184,13 @@ def enable(api):
 
     # Run after most other metadata plugins so we see their final artist
     # values, and late during save so we win over older tag values.
+    api.register_album_metadata_processor(process_album, priority=-50)
     api.register_track_metadata_processor(process_track, priority=-50)
     api.register_file_post_addition_to_track_processor(
         process_file_added, priority=-50
     )
     api.register_file_pre_save_processor(process_pre_save, priority=-50)
 
-    api.register_options_page(SeparateArtistsOptionsPage)
     api.register_track_action(SeparateArtistsAction)
     api.register_file_action(SeparateArtistsAction)
     api.register_album_action(SeparateArtistsAction)

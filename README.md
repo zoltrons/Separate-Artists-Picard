@@ -13,12 +13,11 @@ ALBUMARTISTS = A; B        (multi-value)
 ```
 
 Every tag holds one value per artist, so Navidrome and similar players link
-each artist separately. A joined `ARTIST = A, B` string is still available as
-an option.
+each artist separately.
 
 A single-artist album stays single (`ALBUMARTIST = A`,
 `ALBUMARTISTS = A`). Multi-artist albums are never reduced to the first
-artist unless the optional first-artist mode is selected.
+artist.
 
 ## Features
 
@@ -31,6 +30,7 @@ artist unless the optional first-artist mode is selected.
   Tyler, The Creator, or Earth, Wind & Fire.
 - Keeps a Spotify-style artist order that is already present in the file
   when the names match the MusicBrainz credit.
+- Works automatically with zero configuration while albums load.
 - Adds a right-click action for tracks, files, albums, and clusters.
 - Leaves Various Artists compilations unchanged.
 
@@ -79,21 +79,18 @@ Windows: %LOCALAPPDATA%\MusicBrainz\Picard\plugins3\
 The folder must contain `MANIFEST.toml` and `__init__.py`. Restart Picard and
 enable the plugin.
 
-## Settings
+## Zero configuration
 
-**Options → Plugins → Separate Artists**
+There are no settings. Enable the plugin and it applies the recommended
+layout automatically:
 
-| Setting | Default | Description |
-| --- | --- | --- |
-| Multiple values | on | Writes `ARTIST`/`ALBUMARTIST` (and their sort tags) with one value per artist. |
-| Display separator | `, ` | Only used when multiple values are off: joins `ARTIST` and a multi-artist `ALBUMARTIST` into one string. |
-| ARTIST tag | all artists | Write all artists, or only the primary artist. `ARTISTS` is written either way. |
-| ALBUMARTIST/ALBUMARTISTS | Preserve all | Keep every album artist. `First artist only` collapses the album to one artist. `Leave unchanged` skips album tags. |
-| Collapse ALBUMARTISTS | Off | Only used by first-artist mode. Off keeps every album artist. |
-| Use the file's existing first artist | On | Preserve Spotify-style primary order when it matches the MusicBrainz credit. |
-| Split plain artist strings | On | Fallback for files without a multi-value MusicBrainz credit. |
-| Extra separators | empty | Additional separator tokens, one per line. |
-| Never split | common group names | Names that the string fallback must never split, one per line. |
+- while an album is loaded from MusicBrainz (album and track metadata),
+- when a file is matched to a track,
+- and once more just before a file is saved.
+
+Load your albums, save, done. The right-click **Separate Artists
+(Spotify-style)** action re-applies the rules to files that were tagged
+before the plugin was installed.
 
 ## Scrobbling
 
@@ -110,9 +107,6 @@ ND_LASTFM_SCROBBLEFIRSTARTISTONLY = true
 Navidrome reads the individual artists from `ARTISTS` and submits only the
 first one. Other players that support multi-value artist tags work the same
 way.
-
-If your scrobbler only reads the singular `ARTIST` tag, set **ARTIST tag** to
-**A - primary artist only**.
 
 > Multi-value tags require a format that supports them. For MP3, prefer
 > ID3v2.4. ID3v2.3 can only flatten multiple values into one string.
@@ -133,9 +127,6 @@ For an album credited to both artists, every album artist is preserved:
 ALBUMARTIST  = A; B        (multi-value)
 ALBUMARTISTS = A; B        (multi-value)
 ```
-
-To deliberately file a collaboration album under one artist, set
-**ALBUMARTIST/ALBUMARTISTS** to **First artist only**.
 
 ## Compatibility
 

@@ -425,6 +425,21 @@ class ApplySplitTests(unittest.TestCase):
         self.assertEqual(metadata.getall('artist'), ['A / B'])
         self.assertEqual(metadata.getall('artists'), ['A', 'B'])
 
+    def test_album_metadata_without_track_artists(self):
+        # Album-level metadata, as seen by an album metadata processor.
+        metadata = FakeMetadata(
+            albumartist='A & B',
+            albumartists=['A', 'B'],
+            musicbrainz_albumartistid=['id-a', 'id-b'],
+        )
+
+        result = apply_split(metadata)
+
+        self.assertTrue(result.changed)
+        self.assertEqual(metadata.getall('albumartist'), ['A', 'B'])
+        self.assertEqual(metadata.getall('albumartists'), ['A', 'B'])
+        self.assertEqual(metadata.getall('artist'), [])
+
     def test_no_album_tags(self):
         metadata = FakeMetadata(artist='A & B')
 

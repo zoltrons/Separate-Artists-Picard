@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented in this file.
 
+## 1.3.0 - 2026-10-26
+
+### Changed
+
+- Zero configuration: the options page and all plugin settings are removed.
+  The recommended layout (one value per artist, every album artist kept,
+  Spotify order preserved) is always used.
+- Split album artists automatically while an album is loaded, in addition to
+  the existing track, file-match and pre-save hooks.
+
 ## 1.2.0 - 2026-10-26
 
 ### Changed

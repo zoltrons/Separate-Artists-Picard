@@ -464,6 +464,8 @@ def apply_split(
 
     artists = extract_artist_names(metadata, config)
     if not artists:
+        # Album metadata has no track artists; still split the album artists.
+        _apply_album_split(metadata, config, original_metadata, result)
         return result
 
     artist_order = None
@@ -532,12 +534,25 @@ def apply_split(
             result.notes.append('artistsort updated for all artists')
             result.changed = True
 
+    _apply_album_split(metadata, config, original_metadata, result)
+    return result
+
+
+def _apply_album_split(
+    metadata,
+    config: SplitConfig,
+    original_metadata,
+    result: SplitResult,
+) -> None:
+    """Album-artist half of :func:`apply_split`."""
+
+    join_separator = None if config.multi_value else config.separator
     if config.album_artist_mode == 'keep' or is_various_artists(metadata, config):
-        return result
+        return
 
     album_artists = extract_album_artist_names(metadata, config)
     if not album_artists:
-        return result
+        return
 
     album_order = None
     if original_metadata is not None and config.prefer_original_primary:
@@ -617,5 +632,3 @@ def apply_split(
     ):
         result.notes.append('albumartistsort updated for all album artists')
         result.changed = True
-
-    return result
