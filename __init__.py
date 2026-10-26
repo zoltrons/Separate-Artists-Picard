@@ -3,9 +3,9 @@
 The plugin turns Picard's joined artist credit ("A & B") into Navidrome /
 Spotify-style tags:
 
-    ARTIST       = A, B
+    ARTIST       = A; B       (multi-value)
     ARTISTS      = A; B       (multi-value)
-    ALBUMARTIST  = A, B       (all album artists)
+    ALBUMARTIST  = A; B       (multi-value, all album artists)
     ALBUMARTISTS = A; B       (multi-value)
 
 The first artist is treated as the primary artist.  Multi-artist albums keep
@@ -21,7 +21,7 @@ from .core import apply_split
 
 
 PLUGIN_NAME = 'Separate Artists'
-PLUGIN_VERSION = '1.1.1'
+PLUGIN_VERSION = '1.2.0'
 
 
 def _original_for_track(track):

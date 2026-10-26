@@ -1,7 +1,7 @@
 uuid = "10271e90-857d-47b5-a8de-527e2ec43f08"
 name = "Separate Artists"
-version = "1.1.1"
-description = "Split multi-artist credits into A, B without collapsing multi-artist albums to one artist."
+version = "1.2.0"
+description = "Split multi-artist credits into separate artists without collapsing multi-artist albums to one artist."
 api = ["3.0"]
 authors = ["zoltrons"]
 maintainers = ["zoltrons"]
@@ -17,7 +17,8 @@ Writes one artist per value instead of leaving a joined credit such as
 For a track credited to **A & B** the plugin writes:
 
 ```text
-ARTIST       = A, B
+ARTIST       = A
+ARTIST       = B
 ARTISTS      = A
 ARTISTS      = B
 ```
@@ -25,7 +26,8 @@ ARTISTS      = B
 For an album credited to **A & B**, both album artists are preserved:
 
 ```text
-ALBUMARTIST  = A, B
+ALBUMARTIST  = A
+ALBUMARTIST  = B
 ALBUMARTISTS = A
 ALBUMARTISTS = B
 ```
@@ -49,7 +51,7 @@ If a file already carries a Spotify-style artist order (for example from a
 Spotify downloader), the plugin keeps that order when the names are present
 in the MusicBrainz credit. No Spotify account or API key is needed.
 
-Settings let you choose the display separator, whether ARTIST shows every
+Settings let you write ARTIST as a joined string with a display separator instead, whether ARTIST shows every
 artist or only the primary artist, and whether album artists are preserved or
 collapsed. A right-click action is available for tracks, files, albums and
 clusters.

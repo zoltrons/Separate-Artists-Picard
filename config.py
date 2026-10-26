@@ -18,6 +18,7 @@ CONFIG_VERSION = 2
 
 OPTION_DEFAULTS = {
     'artist_separator': ', ',
+    'multi_value_artists': True,
     'artist_tag_mode': 'all',
     'album_artist_mode': 'all',
     'collapse_albumartists': False,
@@ -94,6 +95,7 @@ def load_config(api) -> SplitConfig:
 
     return SplitConfig(
         separator=get_option(config, 'artist_separator'),
+        multi_value=bool(get_option(config, 'multi_value_artists')),
         artist_tag_mode=get_option(config, 'artist_tag_mode'),
         album_artist_mode=get_option(config, 'album_artist_mode'),
         collapse_albumartists=get_option(config, 'collapse_albumartists'),

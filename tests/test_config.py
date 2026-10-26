@@ -57,6 +57,7 @@ class ConfigTests(unittest.TestCase):
         config = load_config(api)
 
         self.assertEqual(config.separator, ', ')
+        self.assertTrue(config.multi_value)
         self.assertEqual(config.artist_tag_mode, 'all')
         self.assertEqual(config.album_artist_mode, 'all')
         self.assertFalse(config.collapse_albumartists)

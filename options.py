@@ -32,9 +32,9 @@ class SeparateArtistsOptionsPage(OptionsPage):
         layout = QVBoxLayout(self)
 
         intro = QLabel(
-            'Splits multi-artist credits such as "A & B" into "A, B" and '
-            'writes the multi-value ARTISTS/ALBUMARTISTS tags. Multi-artist '
-            'albums keep all of their album artists.'
+            'Splits multi-artist credits such as "A & B" into one value per '
+            'artist in ARTIST/ARTISTS and ALBUMARTIST/ALBUMARTISTS. '
+            'Multi-artist albums keep all of their album artists.'
         )
         intro.setWordWrap(True)
         layout.addWidget(intro)
@@ -42,13 +42,22 @@ class SeparateArtistsOptionsPage(OptionsPage):
         behaviour = QGroupBox('Artist tags')
         form = QFormLayout(behaviour)
 
+        self.multi_value_artists = QCheckBox(
+            'Write ARTIST/ALBUMARTIST as multiple values (recommended)'
+        )
+        self.multi_value_artists.setToolTip(
+            'Players such as Navidrome then link every artist separately. '
+            'Off joins the artists into one string with the display separator.'
+        )
+        form.addRow('', self.multi_value_artists)
+
         self.artist_separator = QLineEdit()
         self.artist_separator.setPlaceholderText(', ')
         self.artist_separator.setMaximumWidth(120)
         form.addRow('Display separator:', self.artist_separator)
 
         self.artist_tag_mode = QComboBox()
-        self.artist_tag_mode.addItem('A, B - display every artist', 'all')
+        self.artist_tag_mode.addItem('A; B - every artist', 'all')
         self.artist_tag_mode.addItem('A - primary artist only', 'primary')
         form.addRow('ARTIST tag:', self.artist_tag_mode)
 
@@ -121,6 +130,10 @@ class SeparateArtistsOptionsPage(OptionsPage):
         self.album_artist_mode.currentIndexChanged.connect(
             self._update_album_artist_controls
         )
+        self.multi_value_artists.toggled.connect(
+            self._update_separator_controls
+        )
+        self._update_separator_controls()
         self._update_album_artist_controls()
 
     def _update_album_artist_controls(self, *_args):
@@ -128,8 +141,16 @@ class SeparateArtistsOptionsPage(OptionsPage):
             self.album_artist_mode.currentData() == 'first'
         )
 
+    def _update_separator_controls(self, *_args):
+        self.artist_separator.setEnabled(
+            not self.multi_value_artists.isChecked()
+        )
+
     def load(self):
         config = self.api.plugin_config
+        self.multi_value_artists.setChecked(
+            bool(get_option(config, 'multi_value_artists'))
+        )
         self.artist_separator.setText(
             get_option(config, 'artist_separator')
         )
@@ -171,6 +192,7 @@ class SeparateArtistsOptionsPage(OptionsPage):
             str(get_option(config, 'never_split'))
         )
         self._update_album_artist_controls()
+        self._update_separator_controls()
 
     def save(self):
         config = self.api.plugin_config
@@ -178,6 +200,7 @@ class SeparateArtistsOptionsPage(OptionsPage):
         if not separator.strip():
             separator = ', '
         config['artist_separator'] = separator
+        config['multi_value_artists'] = self.multi_value_artists.isChecked()
         config['artist_tag_mode'] = self.artist_tag_mode.currentData()
         config['album_artist_mode'] = self.album_artist_mode.currentData()
         config['collapse_albumartists'] = self.collapse_albumartists.isChecked()

@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented in this file.
 
+## 1.2.0 - 2026-10-26
+
+### Changed
+
+- Write `ARTIST` and `ALBUMARTIST` (and their sort tags) as multi-value tags
+  with one value per artist, the way Picard writes `ARTISTS`. A joined string
+  such as `The Weeknd;Lana Del Rey` was shown by Navidrome as one artist.
+- The display separator is now only used when the new "multiple values"
+  option is turned off.
+
 ## 1.1.1 - 2026-10-26
 
 ### Fixed

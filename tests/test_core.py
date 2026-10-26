@@ -106,9 +106,9 @@ class ApplySplitTests(unittest.TestCase):
         result = apply_split(metadata)
 
         self.assertTrue(result.changed)
-        self.assertEqual(metadata['artist'], 'A, B')
+        self.assertEqual(metadata.getall('artist'), ['A', 'B'])
         self.assertEqual(metadata.getall('artists'), ['A', 'B'])
-        self.assertEqual(metadata['albumartist'], 'A, B')
+        self.assertEqual(metadata.getall('albumartist'), ['A', 'B'])
         self.assertEqual(metadata.getall('albumartists'), ['A', 'B'])
         self.assertEqual(
             metadata.getall('musicbrainz_albumartistid'), ['id-a', 'id-b']
@@ -167,7 +167,7 @@ class ApplySplitTests(unittest.TestCase):
         result = apply_split(metadata)
 
         self.assertTrue(result.changed)
-        self.assertEqual(metadata['artist'], 'A, B, C')
+        self.assertEqual(metadata.getall('artist'), ['A', 'B', 'C'])
         self.assertEqual(metadata.getall('artists'), ['A', 'B', 'C'])
 
     def test_various_artists_album_is_kept(self):
@@ -182,7 +182,7 @@ class ApplySplitTests(unittest.TestCase):
         result = apply_split(metadata)
 
         self.assertTrue(result.changed)
-        self.assertEqual(metadata['artist'], 'A, B')
+        self.assertEqual(metadata.getall('artist'), ['A', 'B'])
         self.assertEqual(metadata['albumartist'], 'Various Artists')
         self.assertEqual(metadata.getall('albumartists'), ['Various Artists'])
         self.assertEqual(
@@ -205,9 +205,9 @@ class ApplySplitTests(unittest.TestCase):
 
         result = apply_split(metadata, original_metadata=original)
 
-        self.assertEqual(metadata['artist'], 'A, B')
+        self.assertEqual(metadata.getall('artist'), ['A', 'B'])
         self.assertEqual(metadata.getall('artists'), ['A', 'B'])
-        self.assertEqual(metadata['albumartist'], 'A, B')
+        self.assertEqual(metadata.getall('albumartist'), ['A', 'B'])
         self.assertEqual(metadata.getall('albumartists'), ['A', 'B'])
         self.assertEqual(result.primary, 'A')
 
@@ -217,7 +217,7 @@ class ApplySplitTests(unittest.TestCase):
 
         apply_split(metadata, original_metadata=original)
 
-        self.assertEqual(metadata['artist'], 'A, B')
+        self.assertEqual(metadata.getall('artist'), ['A', 'B'])
         self.assertEqual(metadata.getall('artists'), ['A', 'B'])
 
     def test_single_mb_credit_uses_original_primary(self):
@@ -226,7 +226,7 @@ class ApplySplitTests(unittest.TestCase):
 
         apply_split(metadata, original_metadata=original)
 
-        self.assertEqual(metadata['artist'], 'B, A')
+        self.assertEqual(metadata.getall('artist'), ['B', 'A'])
         self.assertEqual(metadata.getall('artists'), ['B', 'A'])
 
     def test_known_group_is_not_expanded(self):
@@ -251,7 +251,7 @@ class ApplySplitTests(unittest.TestCase):
 
         apply_split(metadata, original_metadata=original)
 
-        self.assertEqual(metadata['albumartist'], 'B, A')
+        self.assertEqual(metadata.getall('albumartist'), ['B', 'A'])
         self.assertEqual(metadata.getall('albumartists'), ['B', 'A'])
 
     def test_single_album_credit_uses_original_primary_in_first_mode(self):
@@ -280,7 +280,7 @@ class ApplySplitTests(unittest.TestCase):
 
         apply_split(metadata, original_metadata=original)
 
-        self.assertEqual(metadata['artist'], 'A, B')
+        self.assertEqual(metadata.getall('artist'), ['A', 'B'])
         self.assertEqual(metadata.getall('artists'), ['A', 'B'])
 
     def test_original_primary_only_singular_wins(self):
@@ -289,7 +289,7 @@ class ApplySplitTests(unittest.TestCase):
 
         apply_split(metadata, original_metadata=original)
 
-        self.assertEqual(metadata['artist'], 'B, A')
+        self.assertEqual(metadata.getall('artist'), ['B', 'A'])
         self.assertEqual(metadata.getall('artists'), ['B', 'A'])
 
     def test_original_order_can_be_disabled(self):
@@ -302,7 +302,7 @@ class ApplySplitTests(unittest.TestCase):
             original_metadata=original,
         )
 
-        self.assertEqual(metadata['artist'], 'B, A')
+        self.assertEqual(metadata.getall('artist'), ['B', 'A'])
 
     def test_idempotent(self):
         metadata = FakeMetadata(
@@ -317,7 +317,7 @@ class ApplySplitTests(unittest.TestCase):
 
         self.assertTrue(first.changed)
         self.assertFalse(second.changed)
-        self.assertEqual(metadata['artist'], 'A, B')
+        self.assertEqual(metadata.getall('artist'), ['A', 'B'])
 
     def test_album_artists_all_mode(self):
         metadata = FakeMetadata(
@@ -329,7 +329,7 @@ class ApplySplitTests(unittest.TestCase):
 
         apply_split(metadata, SplitConfig(album_artist_mode='all'))
 
-        self.assertEqual(metadata['albumartist'], 'A, B')
+        self.assertEqual(metadata.getall('albumartist'), ['A', 'B'])
         self.assertEqual(metadata.getall('albumartists'), ['A', 'B'])
 
     def test_album_artist_keep_mode(self):
@@ -342,7 +342,7 @@ class ApplySplitTests(unittest.TestCase):
 
         apply_split(metadata, SplitConfig(album_artist_mode='keep'))
 
-        self.assertEqual(metadata['artist'], 'A, B')
+        self.assertEqual(metadata.getall('artist'), ['A', 'B'])
         self.assertEqual(metadata['albumartist'], 'A & B')
         self.assertEqual(metadata.getall('albumartists'), ['A', 'B'])
 
@@ -358,7 +358,7 @@ class ApplySplitTests(unittest.TestCase):
 
         self.assertEqual(metadata['artist'], 'A')
         self.assertEqual(metadata.getall('artists'), ['A', 'B'])
-        self.assertEqual(metadata['albumartist'], 'A, B')
+        self.assertEqual(metadata.getall('albumartist'), ['A', 'B'])
 
     def test_single_track_artist_with_collaboration_album(self):
         metadata = FakeMetadata(
@@ -371,7 +371,7 @@ class ApplySplitTests(unittest.TestCase):
         apply_split(metadata)
 
         self.assertEqual(metadata['artist'], 'C')
-        self.assertEqual(metadata['albumartist'], 'A, B')
+        self.assertEqual(metadata.getall('albumartist'), ['A', 'B'])
         self.assertEqual(metadata.getall('albumartists'), ['A', 'B'])
 
     def test_single_track_artist_with_first_artist_album_mode(self):
@@ -417,10 +417,12 @@ class ApplySplitTests(unittest.TestCase):
 
         apply_split(
             metadata,
-            SplitConfig(separator=' / ', extra_separators=('+',)),
+            SplitConfig(
+                separator=' / ', multi_value=False, extra_separators=('+',)
+            ),
         )
 
-        self.assertEqual(metadata['artist'], 'A / B')
+        self.assertEqual(metadata.getall('artist'), ['A / B'])
         self.assertEqual(metadata.getall('artists'), ['A', 'B'])
 
     def test_no_album_tags(self):
@@ -428,7 +430,7 @@ class ApplySplitTests(unittest.TestCase):
 
         apply_split(metadata)
 
-        self.assertEqual(metadata['artist'], 'A, B')
+        self.assertEqual(metadata.getall('artist'), ['A', 'B'])
         self.assertEqual(metadata.getall('albumartist'), [])
 
     def test_musicbrainz_ids_follow_reorder(self):
@@ -508,8 +510,24 @@ class ApplySplitTests(unittest.TestCase):
 
         apply_split(metadata)
 
-        self.assertEqual(metadata['artistsort'], 'A, The, B')
-        self.assertEqual(metadata['albumartistsort'], 'A, The, B')
+        self.assertEqual(metadata.getall('artistsort'), ['A, The', 'B'])
+        self.assertEqual(metadata.getall('albumartistsort'), ['A, The', 'B'])
+
+    def test_joined_mode_writes_single_strings(self):
+        metadata = FakeMetadata(
+            artist='A & B',
+            artists=['A', 'B'],
+            albumartist='A & B',
+            albumartists=['A', 'B'],
+        )
+        metadata['~artists_sort'] = ['A, The', 'B']
+
+        apply_split(metadata, SplitConfig(separator=';', multi_value=False))
+
+        self.assertEqual(metadata.getall('artist'), ['A;B'])
+        self.assertEqual(metadata.getall('albumartist'), ['A;B'])
+        self.assertEqual(metadata.getall('artistsort'), ['A, The;B'])
+        self.assertEqual(metadata.getall('artists'), ['A', 'B'])
 
     def test_sort_names_follow_primary_in_first_mode(self):
         metadata = FakeMetadata(
@@ -544,7 +562,7 @@ class ApplySplitTests(unittest.TestCase):
 
         apply_split(metadata, original_metadata=original)
 
-        self.assertEqual(metadata['albumartist'], 'A, B')
+        self.assertEqual(metadata.getall('albumartist'), ['A', 'B'])
         self.assertEqual(metadata.getall('albumartists'), ['A', 'B'])
 
 

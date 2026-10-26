@@ -74,6 +74,7 @@ class SplitConfig:
     """User-facing settings, with safe defaults."""
 
     separator: str = ', '
+    multi_value: bool = True
     artist_tag_mode: str = 'all'
     album_artist_mode: str = 'all'
     collapse_albumartists: bool = False
@@ -407,10 +408,13 @@ def _set_joined_sort(
     metadata,
     singular_tag: str,
     plural_tag: str,
-    separator: str,
+    separator: str | None,
     order: Sequence[int] | None = None,
 ) -> bool:
-    """Write all sort names, preserving multi-artist order."""
+    """Write all sort names, preserving multi-artist order.
+
+    With ``separator=None`` the sort names are written as a multi-value tag.
+    """
 
     sort_names = _metadata_values(metadata, '~' + plural_tag + '_sort')
     if not sort_names:
@@ -419,6 +423,8 @@ def _set_joined_sort(
         if len(sort_names) != len(order):
             return False
         sort_names = _apply_order(sort_names, order)
+    if separator is None:
+        return _set_value(metadata, singular_tag, sort_names)
     return _set_value(metadata, singular_tag, separator.join(sort_names))
 
 
@@ -489,12 +495,18 @@ def apply_split(
     result.artists = artists
     result.primary = artists[0]
 
-    # ARTIST: singular display tag.  "A, B" is what Navidrome and most
-    # players show; "A" is available for scrobblers that only read ARTIST.
+    # ARTIST: by default one value per artist, so Navidrome and most players
+    # link each artist separately.  A joined "A, B" string is optional; "A" is
+    # available for scrobblers that only read ARTIST.
+    join_separator = None if config.multi_value else config.separator
     if config.artist_tag_mode == 'primary':
         display_artist = result.primary
     elif len(artists) >= 2:
-        display_artist = config.separator.join(artists)
+        display_artist = (
+            list(artists)
+            if join_separator is None
+            else join_separator.join(artists)
+        )
     else:
         display_artist = metadata.get('artist') or result.primary
 
@@ -515,7 +527,7 @@ def apply_split(
                 result.notes.append(f"artistsort set to {sort_name!r}")
                 result.changed = True
         elif _set_joined_sort(
-            metadata, 'artistsort', 'artists', config.separator, artist_order
+            metadata, 'artistsort', 'artists', join_separator, artist_order
         ):
             result.notes.append('artistsort updated for all artists')
             result.changed = True
@@ -555,7 +567,11 @@ def apply_split(
     album_ids_are_aligned = len(album_ids) == len(album_artists)
 
     if config.album_artist_mode == 'all':
-        display_album_artist = config.separator.join(album_artists)
+        display_album_artist = (
+            list(album_artists)
+            if join_separator is None or len(album_artists) < 2
+            else join_separator.join(album_artists)
+        )
         plural_album_artists = album_artists
     else:
         display_album_artist = result.album_primary
@@ -597,7 +613,7 @@ def apply_split(
             result.notes.append(f"albumartistsort set to {sort_name!r}")
             result.changed = True
     elif _set_joined_sort(
-        metadata, 'albumartistsort', 'albumartists', config.separator, album_order
+        metadata, 'albumartistsort', 'albumartists', join_separator, album_order
     ):
         result.notes.append('albumartistsort updated for all album artists')
         result.changed = True
