@@ -18,19 +18,28 @@ class FakeConfigSection:
         self.defaults[name] = default
         self.values.setdefault(name, default)
 
-    def get(self, name, default=None):
-        return self.values.get(name, self.defaults.get(name, default))
-
+    # Mirrors picard.config.ConfigSection: item access only, no .get(), and
+    # unregistered options read as None.
     def __getitem__(self, name):
-        return self.get(name)
+        if name not in self.defaults:
+            return None
+        return self.values.get(name, self.defaults[name])
 
     def __setitem__(self, name, value):
         self.values[name] = value
 
 
+class FakeSetting:
+    def __init__(self, values):
+        self._values = values
+
+    def __getitem__(self, name):
+        return self._values.get(name)
+
+
 class FakeGlobalConfig:
     def __init__(self):
-        self.setting = {'va_name': 'Various Artists'}
+        self.setting = FakeSetting({'va_name': 'Various Artists'})
 
 
 class FakeApi:
@@ -99,6 +108,20 @@ class ConfigTests(unittest.TestCase):
 
         self.assertEqual(config.artist_tag_mode, 'all')
         self.assertEqual(config.album_artist_mode, 'all')
+
+    def test_unregistered_options_use_defaults(self):
+        config = load_config(FakeApi())
+
+        self.assertEqual(config.separator, ', ')
+        self.assertEqual(config.album_artist_mode, 'all')
+        self.assertTrue(config.split_existing)
+
+    def test_va_name_is_read_from_global_settings(self):
+        api = FakeApi()
+        api.global_config.setting = FakeSetting({'va_name': 'Çeşitli Sanatçılar'})
+        register_options(api)
+
+        self.assertEqual(load_config(api).va_name, 'Çeşitli Sanatçılar')
 
     def test_blank_separator_falls_back(self):
         api = FakeApi()

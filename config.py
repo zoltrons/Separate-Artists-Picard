@@ -49,6 +49,22 @@ def _lines(value) -> tuple[str, ...]:
     return tuple(result)
 
 
+def get_option(config, name: str):
+    """Read a plugin option, falling back to its default.
+
+    Picard's ``ConfigSection`` only supports item access (there is no
+    ``.get()``); unregistered options read as ``None``.
+    """
+
+    try:
+        value = config[name]
+    except (KeyError, TypeError):
+        value = None
+    if value is None:
+        return OPTION_DEFAULTS.get(name)
+    return value
+
+
 def _config_version(value) -> int:
     try:
         return int(value)
@@ -59,45 +75,35 @@ def _config_version(value) -> int:
 def load_config(api) -> SplitConfig:
     config = api.plugin_config
     try:
-        va_name = api.global_config.setting.get('va_name', 'Various Artists')
-    except (AttributeError, TypeError):
+        va_name = api.global_config.setting['va_name']
+    except (AttributeError, KeyError, TypeError):
         va_name = 'Various Artists'
 
     # Version 1.0.0 defaulted to collapsing album artists.  Users upgrading
     # from that version get the new "preserve all album artists" default once;
     # after the behavior version is recorded, an explicit first-artist choice
     # is left untouched.
-    if _config_version(config.get('behavior_version', 0)) < CONFIG_VERSION:
+    if _config_version(get_option(config, 'behavior_version')) < CONFIG_VERSION:
         if (
-            config.get('album_artist_mode', 'all') == 'first'
-            and bool(config.get('collapse_albumartists', False))
+            get_option(config, 'album_artist_mode') == 'first'
+            and bool(get_option(config, 'collapse_albumartists'))
         ):
             config['album_artist_mode'] = 'all'
             config['collapse_albumartists'] = False
         config['behavior_version'] = CONFIG_VERSION
 
     return SplitConfig(
-        separator=config.get('artist_separator', OPTION_DEFAULTS['artist_separator']),
-        artist_tag_mode=config.get(
-            'artist_tag_mode', OPTION_DEFAULTS['artist_tag_mode']
-        ),
-        album_artist_mode=config.get(
-            'album_artist_mode', OPTION_DEFAULTS['album_artist_mode']
-        ),
-        collapse_albumartists=config.get(
-            'collapse_albumartists', OPTION_DEFAULTS['collapse_albumartists']
-        ),
-        prefer_original_primary=config.get(
-            'prefer_original_primary', OPTION_DEFAULTS['prefer_original_primary']
-        ),
-        split_existing=config.get(
-            'split_existing', OPTION_DEFAULTS['split_existing']
-        ),
+        separator=get_option(config, 'artist_separator'),
+        artist_tag_mode=get_option(config, 'artist_tag_mode'),
+        album_artist_mode=get_option(config, 'album_artist_mode'),
+        collapse_albumartists=get_option(config, 'collapse_albumartists'),
+        prefer_original_primary=get_option(config, 'prefer_original_primary'),
+        split_existing=get_option(config, 'split_existing'),
         never_split=_lines(
-            config.get('never_split', OPTION_DEFAULTS['never_split'])
+            get_option(config, 'never_split')
         ),
         extra_separators=_lines(
-            config.get('extra_separators', OPTION_DEFAULTS['extra_separators'])
+            get_option(config, 'extra_separators')
         ),
         va_name=va_name or 'Various Artists',
     )

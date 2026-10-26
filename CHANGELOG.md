@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented in this file.
 
+## 1.1.1 - 2026-10-26
+
+### Fixed
+
+- Read settings with item access. Picard 3's `ConfigSection` has no `.get()`,
+  so every metadata hook, the right-click action and the options page failed
+  with `AttributeError`.
+- Read the global "Various Artists" name the same way instead of silently
+  falling back to the default.
+
 ## 1.1.0 - 2026-10-22
 
 ### Changed

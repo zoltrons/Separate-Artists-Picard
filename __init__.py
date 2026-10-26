@@ -21,7 +21,7 @@ from .core import apply_split
 
 
 PLUGIN_NAME = 'Separate Artists'
-PLUGIN_VERSION = '1.1.0'
+PLUGIN_VERSION = '1.1.1'
 
 
 def _original_for_track(track):

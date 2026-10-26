@@ -16,9 +16,9 @@ from PyQt6.QtWidgets import (
 from picard.plugin3.api import OptionsPage
 
 try:  # plugin package import (normal Picard loading)
-    from .config import OPTION_DEFAULTS
+    from .config import get_option
 except ImportError:  # top-level import used by tooling/tests
-    from config import OPTION_DEFAULTS
+    from config import get_option
 
 
 class SeparateArtistsOptionsPage(OptionsPage):
@@ -131,13 +131,13 @@ class SeparateArtistsOptionsPage(OptionsPage):
     def load(self):
         config = self.api.plugin_config
         self.artist_separator.setText(
-            config.get('artist_separator', OPTION_DEFAULTS['artist_separator'])
+            get_option(config, 'artist_separator')
         )
         self.artist_tag_mode.setCurrentIndex(
             max(
                 0,
                 self.artist_tag_mode.findData(
-                    config.get('artist_tag_mode', OPTION_DEFAULTS['artist_tag_mode'])
+                    get_option(config, 'artist_tag_mode')
                 ),
             )
         )
@@ -145,38 +145,30 @@ class SeparateArtistsOptionsPage(OptionsPage):
             max(
                 0,
                 self.album_artist_mode.findData(
-                    config.get(
-                        'album_artist_mode', OPTION_DEFAULTS['album_artist_mode']
-                    )
+                    get_option(config, 'album_artist_mode')
                 ),
             )
         )
         self.collapse_albumartists.setChecked(
             bool(
-                config.get(
-                    'collapse_albumartists',
-                    OPTION_DEFAULTS['collapse_albumartists'],
-                )
+                get_option(config, 'collapse_albumartists')
             )
         )
         self.prefer_original_primary.setChecked(
             bool(
-                config.get(
-                    'prefer_original_primary',
-                    OPTION_DEFAULTS['prefer_original_primary'],
-                )
+                get_option(config, 'prefer_original_primary')
             )
         )
         self.split_existing.setChecked(
             bool(
-                config.get('split_existing', OPTION_DEFAULTS['split_existing'])
+                get_option(config, 'split_existing')
             )
         )
         self.extra_separators.setPlainText(
-            str(config.get('extra_separators', OPTION_DEFAULTS['extra_separators']))
+            str(get_option(config, 'extra_separators'))
         )
         self.never_split.setPlainText(
-            str(config.get('never_split', OPTION_DEFAULTS['never_split']))
+            str(get_option(config, 'never_split'))
         )
         self._update_album_artist_controls()
 
